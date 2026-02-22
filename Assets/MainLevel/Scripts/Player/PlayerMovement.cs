@@ -1,4 +1,5 @@
 using UnityEngine;
+
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private PlayerInput playerInput;
@@ -6,17 +7,20 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private SpriteRenderer playerSprite;
 
     [Header("Movement")]
-    [SerializeField] private float playerSpeed = 5f;
-    [SerializeField] private float playerAcceleration = 20f;
+    [SerializeField] private float playerSpeed = 8f;
+    [SerializeField] private float acceleration = 20f;
+    [SerializeField] private float sprintMultiplier = 1.5f;
+    [SerializeField] private float airControlMultiplier = 0.6f;
 
     [Header("Jumping")]
-    [SerializeField] private float jumpForce = 1f;
+    [SerializeField] private float jumpForce = 16f;
+    [SerializeField] private int maxJumps = 1;
 
-    private int maxJumps = 1;
     private int jumpsRemaining;
 
     private Rigidbody2D playerRb;
-    private Vector2 lastMovedirection;
+    private float currentVelocityX;
+    private Vector2 lastMoveDirection = Vector2.right;
 
     private void Awake()
     {
@@ -30,70 +34,85 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        PlayerSpriteFilp();
-        PlayerWalkInput();
-        PlayerJumpFunction();
+        HandleWalkInput();
+        HandleJump();
+        HandleSpriteFlip();
 
         if (playerState.isGrounded)
         {
             jumpsRemaining = maxJumps;
-            playerState.jumpPressed = false;
         }
-        
     }
 
     private void FixedUpdate()
     {
-        PlayerMovementFunction();
+        HandleMovement();
     }
 
-    private void PlayerMovementFunction()
+    // ------------------------
+    // MOVEMENT
+    // ------------------------
+
+    private void HandleMovement()
     {
-        Vector2 inputVector = playerInput.GetMovementVectorNormalized();
-        Vector2 moveDir = new Vector2(inputVector.x, 0f);
+        Vector2 input = playerInput.GetMovementVectorNormalized();
 
-        float currentMaxSpeed = playerSpeed;
+        // Sprint modifier
+        float speedMultiplier = playerState.sprintPressed ? sprintMultiplier : 1f;
 
-        //check if player can move, allows player to move in air without activating walk animation
-        if (!playerState.wallCollision)
-        {
-            playerRb.AddForce(Vector2.right * moveDir * playerAcceleration);
+        // Final target speed
+        float targetSpeed = input.x * playerSpeed * speedMultiplier;
 
-            // Mathf.Clamp limits player speed, left and right
-            playerRb.linearVelocity = new Vector2(Mathf.Clamp(playerRb.linearVelocity.x, -currentMaxSpeed, currentMaxSpeed), playerRb.linearVelocity.y);
-        }
+        float controlMultiplier = playerState.isGrounded ? 1f : airControlMultiplier;
+
+        // Player acceleration
+        currentVelocityX = Mathf.MoveTowards(playerRb.linearVelocity.x, targetSpeed, acceleration * controlMultiplier * Time.fixedDeltaTime);
+
+        // Player Movement
+        playerRb.linearVelocity = new Vector2(currentVelocityX, playerRb.linearVelocity.y);
     }
-    private void PlayerWalkInput()
+
+    private void HandleWalkInput()
     {
-        Vector2 inputVector = playerInput.GetMovementVectorNormalized();
-        playerState.walkInput = Mathf.Abs(inputVector.x) > 0.01f ;
+        Vector2 input = playerInput.GetMovementVectorNormalized();
+        playerState.moveInput = Mathf.Abs(input.x) > 0.01f;
     }
 
-    public void PlayerJumpFunction()
+    // ------------------------
+    // JUMPING
+    // ------------------------
+
+    private void HandleJump()
     {
         if (!playerState.jumpPressed)
             return;
 
-        if (jumpsRemaining == 0)
+        if (jumpsRemaining <= 0)
             return;
 
-        playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, 0f); // prevents stacking of forces 
-        playerRb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        // Reset vertical velocity for consistent jump height
+        playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, 0f);
+        playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, jumpForce);
 
-            Debug.Log("jumped");
-            jumpsRemaining--;
-        
+        jumpsRemaining--;
+        playerState.jumpPressed = false; // consume jump input
     }
 
-    // flip player sprite, retaining last move direction
-    private void PlayerSpriteFilp()
+    // ------------------------
+    // SPRITE FLIP
+    // ------------------------
+
+    private void HandleSpriteFlip()
     {
-        Vector2 inputVector = playerInput.GetMovementVectorNormalized();
-        Vector2 moveDir = new Vector2(inputVector.x, 0f);
+        Vector2 input = playerInput.GetMovementVectorNormalized();
 
-        if (moveDir.x != 0f) { lastMovedirection = moveDir; }
+        if (Mathf.Abs(input.x) > 0.01f)
+            lastMoveDirection = new Vector2(input.x, 0f);
 
-        if (lastMovedirection.x > 0f ) { playerSprite.flipX = false; }        
-        else if (lastMovedirection.x < 0f) { playerSprite.flipX = true; }
+        if (lastMoveDirection.x > 0f)
+            playerSprite.flipX = false;
+
+        else if (lastMoveDirection.x < 0f)
+            playerSprite.flipX = true;
     }
 }

@@ -5,16 +5,17 @@ TagManager:
   serializedVersion: 3
   tags:
   - Coin
+  - DoorKey
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Background
   - Water
   - UI
   - PlatformLayer
   - WallLayer
-  - 
+  - Player
   - 
   - 
   - 
@@ -41,6 +42,18 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 2420321555
+    locked: 0
+  - name: Environment
+    uniqueID: 1848270695
+    locked: 0
+  - name: Player
+    uniqueID: 2479461267
+    locked: 0
+  - name: UI
+    uniqueID: 2304548119
     locked: 0
   m_RenderingLayers:
   - Default

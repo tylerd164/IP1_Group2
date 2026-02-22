@@ -8,6 +8,7 @@ public class PlayerInput : MonoBehaviour
     private const string PLAYER = "Player";
     private const string MOVE = "Move";
     private const string JUMP = "Jump";
+    private const string SPRINT = "Sprint";
     private const string INTERACT = "Interact";
 
     [SerializeField] private InputActionAsset inputActions;
@@ -19,6 +20,7 @@ public class PlayerInput : MonoBehaviour
 
     private InputAction moveAction;
     private InputAction jumpAction;
+    private InputAction sprintAction;
     private InputAction interact;
 
     float idleTimer;
@@ -37,6 +39,7 @@ public class PlayerInput : MonoBehaviour
     {
         moveAction = InputSystem.actions.FindAction(MOVE);
         jumpAction = InputSystem.actions.FindAction(JUMP);
+        sprintAction = InputSystem.actions.FindAction(SPRINT);
         interact = InputSystem.actions.FindAction(INTERACT);
     }
 
@@ -44,6 +47,7 @@ public class PlayerInput : MonoBehaviour
     {
         inputValue = moveAction.ReadValue<Vector2>();
         playerState.jumpPressed = jumpAction.WasPressedThisFrame();
+        playerState.sprintPressed = sprintAction.IsPressed();
 
         if (HasPlayerInput())
         {

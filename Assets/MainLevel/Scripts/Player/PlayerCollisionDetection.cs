@@ -1,9 +1,12 @@
+using System.Xml.Linq;
 using UnityEngine;
 public class PlayerCollisionDetection : MonoBehaviour
 {
+    private const string DOOR_KEY = "DoorKey";
     [SerializeField] private PlayerInput playerInput;
     [SerializeField] private PlayerStateController playerState;
 
+    [Header("Collision Values")]
     [SerializeField] private float wallDistance = 0.3f;
     [SerializeField] private float platformCheckDistance = 0.3f;
     [SerializeField] private Vector2 boxSize = new Vector2 (2, 2);
@@ -41,6 +44,14 @@ public class PlayerCollisionDetection : MonoBehaviour
                         origin + direction + new Vector3(boxSize.x / 2, -boxSize.y / 2));
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag(DOOR_KEY))
+        {
+            playerState.movingObject = true;
+        }
+    }
+
 
     private void CheckGroundCollision()
     {
@@ -49,8 +60,8 @@ public class PlayerCollisionDetection : MonoBehaviour
         // remove after testing
         
 
-        if (playerState.isGrounded) { Debug.Log("is grounded"); }
-        else { Debug.Log("is not grounded"); }
+        //if (playerState.isGrounded) { Debug.Log("is grounded"); }
+        //else { Debug.Log("is not grounded"); }
     }
 
     private void CheckWallCollision()

@@ -9,9 +9,11 @@ public class PlayerStateController : MonoBehaviour
 
     public bool isGrounded { get; set; }
     public bool jumpPressed { get; set; }
-    public bool walkInput { get; set; }
+    public bool sprintPressed { get; set; }
+    public bool moveInput { get; set; }
     public bool wallCollision { get; set; }
     public bool isIdle { get; set; }
+    public bool movingObject { get; set; }
 
     private PlayerStates lastState;
 
@@ -35,7 +37,7 @@ public class PlayerStateController : MonoBehaviour
         }
 
         // Walking only if there is input AND no wall collision
-        else if (walkInput && isGrounded && !wallCollision)
+        else if (moveInput && isGrounded && !wallCollision)
         {
             SetPlayerState(PlayerStates.Walking);
             return;

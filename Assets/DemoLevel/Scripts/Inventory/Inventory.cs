@@ -6,7 +6,6 @@ public class Inventory : MonoBehaviour
     [SerializeField] public int size = 20;
     [SerializeField] public List<InventorySlot> slots = new List<InventorySlot>();
 
-    // explain all
     private void Awake()
     {
         for (int i = 0; i < size; i++)

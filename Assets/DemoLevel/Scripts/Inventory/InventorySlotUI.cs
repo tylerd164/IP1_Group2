@@ -18,7 +18,7 @@ public class InventorySlotUI : MonoBehaviour
         {
             icon.enabled = true;
             icon.sprite = slot.item.icon;
-            amountText.text = slot.amount > 1 ? slot.amount.ToString() : ""; // explain
+            amountText.text = slot.amount > 1 ? slot.amount.ToString() : "";
         }
     }
 }

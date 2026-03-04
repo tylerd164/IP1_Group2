@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[System.Serializable] // explain 
+[System.Serializable] 
 public class InventorySlot
 {
     [SerializeField] public Item item;

@@ -9,7 +9,7 @@ public class InventoryUI : MonoBehaviour
     {
         for (int i = 0; i < slotsUI.Length; i++)
         {
-            slotsUI[i].UpdateSlot(inventory.slots[i]); // explain
+            slotsUI[i].UpdateSlot(inventory.slots[i]);
         }
     }
 }

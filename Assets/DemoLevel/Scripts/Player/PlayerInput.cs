@@ -1,4 +1,6 @@
+using System.Xml.Serialization;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using static States;
 
@@ -7,16 +9,26 @@ public class PlayerInput : MonoBehaviour
     private const string PLAYER = "Player";
     private const string UI = "UI";
 
+    // Player movement actions
     private const string MOVE = "Move";
     private const string JUMP = "Jump";
     private const string SPRINT = "Sprint";
     private const string INTERACT = "Interact";
     private const string PAUSE = "Pause";
 
+    // UI actions 
+    private const string NAVIGATE = "Navigate";
+    private const string SUBMIT = "Submit";
+    private const string CANCEL = "Cancel";
+
     [Header("References")]
     [SerializeField] private InputActionAsset inputActions;
     [SerializeField] private PlayerStateController playerState;
-    [SerializeField] private GameObject mainMenu;
+
+    [Header("Pause Menu")]
+    [SerializeField] private GameObject pauseMenu;
+    [SerializeField] private GameObject firstButton;
+    [SerializeField] private GameObject pausedObject;
 
     [Header("Idle Settings")]
     [SerializeField] private float idleDelay = 2f;
@@ -24,11 +36,19 @@ public class PlayerInput : MonoBehaviour
     private InputActionMap playerMap;
     private InputActionMap uiMap;
 
+    // player movement actions
     private InputAction moveAction;
     private InputAction jumpAction;
     private InputAction sprintAction;
     private InputAction interactAction;
     private InputAction pauseAction;
+
+    // UI actions
+    private InputAction navigateAction;
+    private InputAction submitAction;
+    private InputAction cancelAction;
+
+    public bool win { get; set; }
 
     private Vector2 inputValue;
     private float idleTimer;
@@ -38,21 +58,28 @@ public class PlayerInput : MonoBehaviour
 
     private void Awake()
     {
-        
         playerMap = inputActions.FindActionMap(PLAYER);
         uiMap = inputActions.FindActionMap(UI);
 
+        // player movement actions
         moveAction = playerMap.FindAction(MOVE);
         jumpAction = playerMap.FindAction(JUMP);
         sprintAction = playerMap.FindAction(SPRINT);
         interactAction = playerMap.FindAction(INTERACT);
         pauseAction = playerMap.FindAction(PAUSE);
+
+        // UI actions
+        navigateAction = uiMap.FindAction(NAVIGATE);
+        submitAction = uiMap.FindAction(SUBMIT);
+        cancelAction = uiMap.FindAction(CANCEL);
     }
 
     private void OnEnable()
     {
         playerMap.Enable();
+        uiMap.Enable();
         pauseAction.performed += OnPausePressed;
+        EventSystem.current.SetSelectedGameObject(firstButton);
     }
 
     private void OnDisable()
@@ -65,6 +92,12 @@ public class PlayerInput : MonoBehaviour
     private void Update()
     {
         if (isPaused) return;
+
+        // If nothing selected (common controller issue)
+        if (EventSystem.current.currentSelectedGameObject == null)
+        {
+            EventSystem.current.SetSelectedGameObject(firstButton);
+        }
 
         HandleMovementInput();
         HandleIdleState();
@@ -95,9 +128,14 @@ public class PlayerInput : MonoBehaviour
     public void TogglePause()
     {
         if (isPaused)
+        {
             ResumeGame();
+        }
         else
+        {
             PauseGame();
+            pausedObject.SetActive(true);
+        }
     }
 
     public void PauseGame()
@@ -106,15 +144,15 @@ public class PlayerInput : MonoBehaviour
 
         isPaused = true;
 
-        mainMenu.SetActive(true);
+        pauseMenu.SetActive(true);
 
         Time.timeScale = 0f;
 
         playerMap.Disable();
         uiMap.Enable();
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        //Cursor.lockState = CursorLockMode.Confined;
+        //Cursor.visible = true;
     }
 
     public void ResumeGame()
@@ -123,15 +161,16 @@ public class PlayerInput : MonoBehaviour
 
         isPaused = false;
 
-        mainMenu.SetActive(false);
+        pauseMenu.SetActive(false);
+        pausedObject.SetActive(false);
 
         Time.timeScale = 1f;
 
         uiMap.Disable();
         playerMap.Enable();
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        //Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.visible = false;
     }
 
     #endregion
